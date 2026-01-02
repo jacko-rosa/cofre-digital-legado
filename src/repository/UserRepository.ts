@@ -1,6 +1,7 @@
 import { getDb } from "../config/databse.ts";
 import Log from "../util/log.ts";
 import type { UserDomain } from "../types/User.ts";
+import { ObjectId } from "mongodb";
 
 const COLLECTION_NAME = 'user';
 const CLASS = 'UserRepository';
@@ -18,7 +19,23 @@ class UserRepository {
             return req;
         } catch (error) {
             throw new Error('Erro interno ao persistir o usuário.');
-            // todo: criar erro personalizado de repositório
+        }
+    }
+
+    async findById(id: string): Promise<UserDomain> {
+        const MOTHOD = 'findById';
+        try {
+            Log.startInfo(CLASS, MOTHOD, id);
+            const db = await getDb();
+            const usersCollection = db.collection<UserDomain>(COLLECTION_NAME);
+            const user = await usersCollection.findOne({ _id: new ObjectId(id) });
+            if (!user) {
+                throw new Error('Usuário não encontrado.');
+            }
+            Log.endInfo(CLASS, MOTHOD, user);
+            return user;
+        } catch (error) {
+            throw new Error('Erro interno ao buscar o usuário.');
         }
     }
 }
